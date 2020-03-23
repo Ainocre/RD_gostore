@@ -2,20 +2,12 @@
 # yarn lockfile v1
 
 
-jimprove@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/jimprove/-/jimprove-0.1.0.tgz#4e7d718d8f8e337af28f6d4588130c5f925f3304"
-  integrity sha512-6IgRG0G4D4SJhkJU1g35B9Laoyr95ZRLtbbVBLk5mFNdp5kHWKg5G0ItjZINii+XmfPDvjwec8biEVoesEb/WQ==
-  dependencies:
-    lodash "^4.17.15"
-    moment "^2.24.0"
-
 lodash@^4.17.15:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
-moment@^2.24.0:
-  version "2.24.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
-  integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
+vue@^2.6.11:
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.11.tgz#76594d877d4b12234406e84e35275c6d514125c5"
+  integrity sha512-VfPwgcGABbGAue9+sfrD4PuwFar7gPb1yl1UK1MwXoQPAw0BKSqWfoYCT/ThFrdEVWoI51dBuyCoiNU9bZDZxQ==

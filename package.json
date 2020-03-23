@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Ainocre/jstore#readme",
   "dependencies": {
-    "jimprove": "^0.1.0"
+    "lodash": "^4.17.15",
+    "vue": "^2.6.11"
   }
 }
