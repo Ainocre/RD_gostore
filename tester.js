@@ -56,5 +56,10 @@ const store = Store({
             console.log('33, ok')
         },
     })
+    .watch({
+        firstName(newValue, oldValue) {
+            console.log('firstName changed ! New value : ', newValue, ' old value : ', oldValue)
+        },
+    })
 
-console.log(store.alert())
+store.lastName = 'toto'
