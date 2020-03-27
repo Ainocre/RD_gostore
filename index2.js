@@ -1,4 +1,6 @@
 const Vue = require('vue')
+const moment = require('moment')
+const emailRegex = require('email-regex')
 const {
     isObject,
     forEach,
@@ -8,6 +10,10 @@ const {
     isBoolean,
     isNumber,
     isDate,
+    keys,
+    isNil,
+    isUndefined,
+    constant,
     cloneDeep,
 } = require('lodash')
 
@@ -16,41 +22,44 @@ const {
 console.log('________________________')
 console.log('')
 
-const allowedTypes = [
-    'any',
-    // 'checkbox',
-    // 'date',
-    'datetime',
-    'email',
-    // 'file',
-    // 'html',
-    // 'canvas',
-    // 'sound',
-    // 'video',
-    // 'dropZone',
-    // 'slider',
-    // 'code',
-    // 'markdown',
-    'number',
-    // 'radio',
-    // 'phone',
-    // 'pic',
-    // 'rating',
-    // 'ref',
-    // 'select',
-    // 'snapshot',
-    // 'tabs',
-    'text',
-    'textarea',
-    // 'time',
-    'toggle',
-]
+const typeDict = {
+    any: constant(true),
+    date: (val) => moment(val).isValid(),
+    time: (val) => moment(val).isValid(),
+    datetime: (val) => moment(val).isValid(),
+    email: (val) => isString(val) && emailRegex({ exact: true }).test(val),
+    text: (val) => isString(val),
+    textarea: (val) => isString(val),
+    toggle: (val) => isBoolean(val),
+    checkbox: (val) => isBoolean(val),
+    number: (val) => isNumber(val),
+}
+
+// [
+//     'file',
+//     'html',
+//     'canvas',
+//     'sound',
+//     'video',
+//     'dropZone',
+//     'slider',
+//     'code',
+//     'markdown',
+//     'radio',
+//     'phone',
+//     'pic',
+//     'rating',
+//     'ref',
+//     'select',
+//     'snapshot',
+//     'tabs',
+// ]
 
 class Type {
     options = {}
 
     constructor(type) {
-        if (!allowedTypes.includes(type)) throw new Error(`${type} type is not supported`)
+        if (!keys(typeDict).includes(type)) throw new Error(`${type} type is not supported`)
         this.type = type
     }
 
@@ -114,6 +123,7 @@ class Type {
         return this
     }
 
+    // Todo
     crypted(val = true) {
         if (!isBoolean(val)) throw new Error('"crypted" must be of type Boolean')
         this.options.crypted = val
@@ -132,12 +142,14 @@ class Type {
         return this
     }
 
+    // Works only in collections
     mine(val = true) {
         if (!isBoolean(val)) throw new Error('"mine" must be of type Boolean')
         this.options.mine = val
         return this
     }
 
+    // Works only in collections
     uniq(val = true) {
         if (!isBoolean(val)) throw new Error('"uniq" must be of type Boolean')
         this.options.uniq = val
@@ -146,13 +158,25 @@ class Type {
 
     required(val = true) {
         if (!isBoolean(val)) throw new Error('"required" must be of type Boolean')
-        this.isValueRequired = val
+        this.options.required = val
         return this
     }
 
     length(len) {
-        if (!isNumber(val)) throw new Error('"length" must be of type Number')
-        this.lengthValue = len
+        if (!isNumber(len)) throw new Error('"length" must be of type Number')
+        this.options.length = len
+        return this
+    }
+
+    minLength(len) {
+        if (!isNumber(len)) throw new Error('"minLength" must be of type Number')
+        this.options.minLength = len
+        return this
+    }
+
+    maxLength(len) {
+        if (!isNumber(len)) throw new Error('"maxLength" must be of type Number')
+        this.options.maxLength = len
         return this
     }
 
@@ -165,9 +189,59 @@ class Type {
     // ________________________________________________
     // Getters
 
-    validate(store, field) {
-        let res = field
-        
+    validate(store, document, fieldName, field) {
+        const res = field
+
+        // format
+        if (this.options.format) {
+            res = this.options.format({ store, document, fieldName, field })
+        }
+
+        // undefined
+        if (isUndefined(res)) throw new Error(`${fieldName} is undefined. A field cannot be undefined`)
+
+        // default and required
+        if (res === null) {
+            if (!isNil(this.options.default)) res = this.options.default
+            else if (this.options.required) throw new Error(`${fieldName} field is required`)
+        }
+
+        // type validation
+        if (res !== null && !typeDict[this.type](field))
+            throw new Error(`${fieldName} field must be ${this.type} type`)
+
+        // isNaN
+        if (isBoolean(this.options.isNaN) && isNaN(field) !== this.options.isNaN) {
+            if (this.options.isNaN) {
+                throw new Error(`${fieldName} field must not be a Number`)
+            }
+            throw new Error(`${fieldName} field must be a Number`)
+        }
+
+        // min, max and spread
+        if (isNumber(field)) {
+            const { min, max, spread } = this.options
+            if (isNumber(min) && field < min) throw new Error(`${fieldName} must be equal or higher than ${min}`)
+            if (isNumber(max) && field > max) throw new Error(`${fieldName} must be equal or lower than ${max}`)
+            if (isNumber(spread) && field % spread) throw new Error(`${fieldName} must be a multiple of ${spread}`)
+        }
+
+        // oneOf, length, minLength and maxLength
+        if (isString(field)) {
+            const { oneOf, length, minLength, maxLength } = this.options
+            if (isArray(oneOf) && !oneOf.includes(field))
+                throw new Error(`${fieldName} must be one of : ${oneOf.join(', ')}`)
+            if (isNumber(length) && field.length !== length) 
+                throw new Error(`${fieldName} length must be ${length}`)
+            if (isNumber(minLength) && field.length < minLength) 
+                throw new Error(`${fieldName} length must be equal or higher than ${minLength}`)
+            if (isNumber(maxLength) && field.length > maxLength) 
+                throw new Error(`${fieldName} length must be equal or lower than ${maxLength}`)
+        }
+
+        // validation
+        if (isFunction(this.options.validation) && !this.options.validation({ store, document, fieldName, field}))
+            throw new Error(`${fieldName} didn't pass schema validation function`)
     }
 }
 
@@ -187,6 +261,8 @@ const parseType = (ele) => {
 }
 
 class State {
+    type = 'session'
+    collectionName = null
     watchers = {}
     schema = {}
 
@@ -240,7 +316,7 @@ class State {
 
         // validation
         forEach(state, (field, key) => {
-            newState[key] = this.schema[key].validate(this.store, field)
+            newState[key] = this.schema[key].validate(this.store, this, key, field)
         })
 
         forEach(state, (field, key) => {
@@ -358,14 +434,18 @@ module.exports.Store = Store
 const store = new Store().addState({
     firstName: 'Gui',
     lastName: 'Bou',
+    cp: type('text').length(5),
+    description: type('text').maxLength(10),
+    name: type('text').minLength(3),
+    count: type('number').min(3),
 })
 
-store.firstName = 'Gui2'
+store.cp = '69005'
 
 // console.log(store)
 
 
-// validation
+// checkbox group
 // subdocuments
 // array
 // collections
