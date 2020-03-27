@@ -1,9 +1,7 @@
-const Vue = require('vue')
 const moment = require('moment')
 const emailRegex = require('email-regex')
 const {
     isObject,
-    forEach,
     isArray,
     isString,
     isFunction,
@@ -14,13 +12,7 @@ const {
     isNil,
     isUndefined,
     constant,
-    cloneDeep,
 } = require('lodash')
-
-// Validation des champs
-
-console.log('________________________')
-console.log('')
 
 const typeDict = {
     any: constant(true),
@@ -250,6 +242,7 @@ const type = (...params) => new Type(...params)
 const parseType = (ele) => {
     if (ele.constructor.name === 'Type') return ele
 
+
     if (typeof ele === 'object') throw new Error('Object and Array are not allowed')
 
     if (ele === null) return type('any')
@@ -260,194 +253,5 @@ const parseType = (ele) => {
     return type('any')
 }
 
-class State {
-    type = 'session'
-    collectionName = null
-    watchers = {}
-    schema = {}
-
-    constructor(store, stateName, state, options) {
-        this.options = options
-        this.store = store
-        this.name = stateName
-
-        // Init state
-        const tempState = {}
-        forEach(state, (field, key) => {
-            // Prepare schema
-            this.schema[key] = parseType(field)
-
-            // tempState[key] = this.schema[key].getDefaultValue()
-
-            Object.defineProperty(this, key, {
-                set: function (value) {
-                    this.update({ [key]: cloneDeep(value) })
-                },
-                get: function () {
-                    return this.state[key]
-                },
-            })
-        })
-
-        this.state = Vue.observable(tempState)
-
-        // Init watchers
-        forEach(options.watch, (func, watcher) => {
-            this.watchers[watcher] = func.bind(this)
-        })
-
-        // Init computed
-        forEach(options.computed, (computed, computedName) => {
-            Object.defineProperty(this, computedName, {
-                get: function () {
-                    return computed.bind(this)()
-                },
-            })
-        })
-
-        // Init methods
-        forEach(options.methods, (method, methodName) => {
-            this[methodName] = method.bind(this)
-        })
-    }
-
-    update(state) {
-        const newState = {}
-
-        // validation
-        forEach(state, (field, key) => {
-            newState[key] = this.schema[key].validate(this.store, this, key, field)
-        })
-
-        forEach(state, (field, key) => {
-            // Trigger watchers
-            if (this.watchers[key]) {
-                this.watchers[key](cloneDeep(field), this[key])
-            }
-
-            // Update state
-            this.state[key] = field
-        })
-    }
-}
-
-class Store {
-    state = {}
-    collections = {}
-    models = {}
-
-    constructor(options) {
-        // Options
-        // -- localStorage: Boolean => save state into browser
-        // -- firebase: firebase => save into firebase
-        // -- cryptCode: String => key to decrypt encrypted data
-        this.options = options
-    }
-
-    addState(...params) {
-        if (isObject(params[0])) {
-            params.unshift('default')
-        }
-        if (!isObject(params[2])) {
-            params[2] = {}
-        }
-
-        this.state[params[0]] = new State(this, ...params)
-        if (params[0] === 'default') {
-            // Set state shortcuts to store root
-
-            forEach(params[1], (field, key) => {
-                Object.defineProperty(this, key, {
-                    set: function (value) {
-                        this.state.default[key] = value
-                    },
-                    get: function () {
-                        return this.state.default[key]
-                    },
-                })
-            })
-
-            forEach(params[2].computed, (computed, computedName) => {
-                Object.defineProperty(this, computedName, {
-                    get: function () {
-                        return this.state.default[computedName]
-                    },
-                })
-            })
-
-            forEach(params[2].methods, (method, methodName) => {
-                this[methodName] = (...params) => this.state.default[methodName](...params)
-            })
-        } else {
-            Object.defineProperty(this, params[0], {
-                set: function (value) {
-                    this.state[params[0]] = value
-                },
-                get: function () {
-                    return this.state[params[0]]
-                },
-            })
-        }
-
-        return this
-    }
-
-    addCollection(collectionName, collectionModel) {
-
-    }
-
-    auth() {
-        
-    }
-
-    ready() {
-
-    }
-
-    signin() {
-
-    }
-
-    signup() {
-
-    }
-
-    signout() {
-
-    }
-
-    setCryptCode(newCryptCode) {
-        this.options.cryptCode = newCryptCode
-    }
-
-    resetHard() {
-
-    }
-
-    resetSoft() {
-
-    }
-}
-
-module.exports.Store = Store
-
-const store = new Store().addState({
-    firstName: 'Gui',
-    lastName: 'Bou',
-    cp: type('text').length(5),
-    description: type('text').maxLength(10),
-    name: type('text').minLength(3),
-    count: type('number').min(3),
-})
-
-store.cp = '69005'
-
-// console.log(store)
-
-
-// checkbox group
-// subdocuments
-// array
-// collections
-// online
-// observables
+module.exports.type = type
+module.exports.parseType = parseType
