@@ -1,25 +1,8 @@
 const { Store, type } = require('./index.js')
 
-// const test = {
-//     default: 0,
-//     min,
-//     max,
-//     validation,
-//     format,
-//     type,
-//     oneOf,
-//     encryption,
-//     required,
-//     length
-//     isNaN
-// }
-
-
 // ______________________________________________________________________________
 // Todolist exemple
 const todoStore = new Store({ cryptCode: 'azerty', firebase: {} })
-
-todoStore
     .addCollection('users', {
         firstName: type('text').required(),
         lastName: type('text').required(),
@@ -76,8 +59,6 @@ todoStore
 // ecommerce exemple
 
 const ecommerceStore = new Store({ cryptCode: 'azerty', firebase: {} })
-
-ecommerceStore
     .addState({
         startSession: new Date(),
         visitesProductsNb: 0,
@@ -161,8 +142,6 @@ ecommerceStore
 // ______________________________________________________________________________
 // chat exemple without login
 const chatStore = new Store({ firebase: {} })
-
-chatStore
     .addState({
         pseudo: 'Invité',
         selectedRoom: null,
@@ -194,16 +173,11 @@ chatStore
 // ______________________________________________________________________________
 // misc exemple
 const miscStore = new Store({ localStorage: true })
-
-miscStore
     .addCollection('actors', { name: type('text').required() })
     .addCollection('films', { name: type('text').required() })
     .addMtm('actors', 'films')
 
-
-
 // hooks
-// watch
 // fetch, sync, async
 // Reset logout qui ne reset pas tout
 // Vuejs ou quasarjs
