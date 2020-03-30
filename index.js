@@ -5,13 +5,26 @@ module.exports.Store = Store
 module.exports.type = type
 
 const store = Store().addState({
-    tasks: [{
-        name: type('text').required(),
-    }],
+    firstName: 'Gui',
+    lastName: 'Bou',
+    age: 20,
+}, {
+    methods: {
+        addAge() {
+            this.age++
+        },
+    },
 })
 
-// store.tasks.push('ok')
-// console.log(2, store.state.default.state.tasks)
+
+
+
+// types
+// watchers
+// obj et arrays
+// observers chainés
+
+
 
 // les arrays
 

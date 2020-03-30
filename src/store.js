@@ -2,7 +2,6 @@ const Document = require('./document')
 
 const {
     isObject,
-    isFunction,
 } = require('lodash')
 
 class Store {
@@ -72,28 +71,34 @@ module.exports = (...params) => {
     const store = new Store(...params)
     return new Proxy(store, {
         get(obj, prop) {
+            // object methods
             const res = obj[prop]
             if (res) return res
 
+            // Shortcut default state methods to store
             if (obj.state.default && obj.state.default[prop]) {
                 return obj.state.default[prop]
             }
 
+            // Shortcut named states to store
             if (prop in obj.state) return obj.state[prop]
 
+            // Shortcut collections to store
             if (prop in obj.collections) return obj.collections[prop]
         },
         set(obj, prop, value) {
+            // normal behavior of obj methods and vars
             if (prop in obj){
                 obj[prop] = value
                 return true
             }
 
-            if (obj.state.default && obj.state.default.state[prop]) {
+            // Shortcut default state to store
+            if (obj.state.default && obj.state.default[prop]) {
                 return obj.state.default.update({ [prop]: value })
             }
 
-            throw new Error('This field does not exist')
+            throw new Error('You cannot write this field')
         },
     })
 }
