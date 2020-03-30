@@ -1,8 +1,8 @@
-const State = require('./state')
+const Document = require('./document')
 
 const {
     isObject,
-    forEach,
+    isFunction,
 } = require('lodash')
 
 class Store {
@@ -26,42 +26,7 @@ class Store {
             params[2] = {}
         }
 
-        this.state[params[0]] = new State(this, ...params)
-        if (params[0] === 'default') {
-            // Set state shortcuts to store root
-
-            forEach(params[1], (field, key) => {
-                Object.defineProperty(this, key, {
-                    set: function (value) {
-                        this.state.default[key] = value
-                    },
-                    get: function () {
-                        return this.state.default[key]
-                    },
-                })
-            })
-
-            forEach(params[2].computed, (computed, computedName) => {
-                Object.defineProperty(this, computedName, {
-                    get: function () {
-                        return this.state.default[computedName]
-                    },
-                })
-            })
-
-            forEach(params[2].methods, (method, methodName) => {
-                this[methodName] = (...params) => this.state.default[methodName](...params)
-            })
-        } else {
-            Object.defineProperty(this, params[0], {
-                set: function (value) {
-                    this.state[params[0]] = value
-                },
-                get: function () {
-                    return this.state[params[0]]
-                },
-            })
-        }
+        this.state[params[0]] = Document(this, ...params)
 
         return this
     }
@@ -103,4 +68,31 @@ class Store {
     // }
 }
 
-module.exports = Store
+module.exports = (...params) => {
+    const store = new Store(...params)
+    return new Proxy(store, {
+        get(obj, prop) {
+            if (prop in obj) return obj[prop]
+
+            if (obj.state.default && obj.state.default[prop]) {
+                return obj.state.default[prop]
+            }
+
+            if (prop in obj.state) return obj.state[prop]
+
+            if (prop in obj.collections) return obj.collections[prop]
+        },
+        set(obj, prop, value) {
+            if (prop in obj){
+                obj[prop] = value
+                return true
+            }
+
+            if (obj.state.default && obj.state.default.state[prop]) {
+                return obj.state.default.update({ [prop]: value })
+            }
+
+            throw new Error('This field does not exist')
+        },
+    })
+}

@@ -8,6 +8,7 @@ const {
     isBoolean,
     isNumber,
     isDate,
+    forEach,
     keys,
     isNil,
     isUndefined,
@@ -60,6 +61,10 @@ class Type {
     default(defaultValue = null) {
         this.options.default = defaultValue
         return this
+    }
+
+    get defaultValue() {
+        return this.options.default || null
     }
 
     min(val) {
@@ -234,6 +239,8 @@ class Type {
         // validation
         if (isFunction(this.options.validation) && !this.options.validation({ store, document, fieldName, field}))
             throw new Error(`${fieldName} didn't pass schema validation function`)
+
+        return res
     }
 }
 
@@ -242,8 +249,9 @@ const type = (...params) => new Type(...params)
 const parseType = (ele) => {
     if (ele.constructor.name === 'Type') return ele
 
-
-    if (typeof ele === 'object') throw new Error('Object and Array are not allowed')
+    if (isObject(ele)) return createValidationSchema(ele)
+    if (isArray(ele) && ele.length !== 1) throw new Error('Array in schema must have exactly one child') 
+    if (isArray(ele)) return [parseType(ele)]
 
     if (ele === null) return type('any')
     if (isString(ele)) return type('text').default(ele)
@@ -253,5 +261,36 @@ const parseType = (ele) => {
     return type('any')
 }
 
+const getRecursiveDefault = (schema) => {
+    if (schema.constructor.name === 'Type') return schema.defaultValue
+
+    const defaultState = {}
+
+    forEach(schema, (field, key) => {
+        if (isObject(field)) defaultState[key] = getRecursiveDefault(field)
+        else if (isArray(field)) defaultState[key] = getRecursiveDefault(field[0])
+        else defaultState[key] = schema.defaultValue
+    })
+
+    return defaultState
+}
+
+const createValidationSchema = (state) => {
+    const schema = {}
+
+    forEach(state, (field, key) => {
+        schema[key] = parseType(field)
+    })
+
+    Object.defineProperty(schema, 'defaultState', {
+        get() {
+            return getRecursiveDefault(schema)
+        },
+        enumerable: false,
+    })
+
+    return schema
+}
+
 module.exports.type = type
-module.exports.parseType = parseType
+module.exports.createValidationSchema = createValidationSchema
