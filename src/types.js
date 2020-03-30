@@ -9,6 +9,7 @@ const {
     isNumber,
     isDate,
     forEach,
+    get,
     keys,
     isNil,
     isUndefined,
@@ -38,6 +39,7 @@ const typeDict = {
 //     'slider',
 //     'code',
 //     'markdown',
+//     'checkboxGroup',
 //     'radio',
 //     'phone',
 //     'pic',
@@ -186,12 +188,13 @@ class Type {
     // ________________________________________________
     // Getters
 
-    validate(store, document, fieldName, field) {
-        const res = field
+    validate(field) {
+        let res = field
+        const fieldName = 'This field' // Temporary
 
         // format
         if (this.options.format) {
-            res = this.options.format({ store, document, fieldName, field })
+            res = this.options.format({ field })
         }
 
         // undefined
@@ -204,7 +207,7 @@ class Type {
         }
 
         // type validation
-        if (res !== null && !typeDict[this.type](field))
+        if (res !== null && !typeDict[this.type](res))
             throw new Error(`${fieldName} field must be ${this.type} type`)
 
         // isNaN
@@ -246,12 +249,39 @@ class Type {
 
 const type = (...params) => new Type(...params)
 
+const recursiveValidation = (schema, obj) => {
+    if (schema.constructor.name === 'Type') return schema.validate(obj)
+
+    const newState = {}
+
+    forEach(schema, (field, key) => {
+        if (isObject(field))
+            newState[key] = recursiveValidation(field, get(obj, [key], null))
+        else if (isArray(field))
+            newState[key] = field.map((ele, index) => recursiveValidation(ele, obj[key][index]))
+    })
+
+    return newState
+}
+
+const seValidationMethod = (schema) => {
+    Object.defineProperty(schema, 'validate', {
+        get() {
+            // Ecrire cette fonction de validation
+            return (obj) => recursiveValidation(schema, obj)
+        },
+        enumerable: false,
+    })
+
+    return schema
+}
+
 const parseType = (ele) => {
     if (ele.constructor.name === 'Type') return ele
 
-    if (isObject(ele)) return createValidationSchema(ele)
+    if (isObject(ele)) return seValidationMethod(createValidationSchema(ele))
     if (isArray(ele) && ele.length !== 1) throw new Error('Array in schema must have exactly one child') 
-    if (isArray(ele)) return [parseType(ele)]
+    if (isArray(ele)) return seValidationMethod([parseType(ele)])
 
     if (ele === null) return type('any')
     if (isString(ele)) return type('text').default(ele)

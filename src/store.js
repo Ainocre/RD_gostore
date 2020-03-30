@@ -72,7 +72,8 @@ module.exports = (...params) => {
     const store = new Store(...params)
     return new Proxy(store, {
         get(obj, prop) {
-            if (prop in obj) return obj[prop]
+            const res = obj[prop]
+            if (res) return res
 
             if (obj.state.default && obj.state.default[prop]) {
                 return obj.state.default[prop]
