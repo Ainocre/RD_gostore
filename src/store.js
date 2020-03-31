@@ -2,6 +2,7 @@ const Document = require('./document')
 
 const {
     isObject,
+    isUndefined,
 } = require('lodash')
 
 class Store {
@@ -76,7 +77,7 @@ module.exports = (...params) => {
             if (res) return res
 
             // Shortcut default state methods to store
-            if (obj.state.default && obj.state.default[prop]) {
+            if (obj.state.default && !isUndefined(obj.state.default[prop])) {
                 return obj.state.default[prop]
             }
 
@@ -95,10 +96,11 @@ module.exports = (...params) => {
 
             // Shortcut default state to store
             if (obj.state.default && obj.state.default[prop]) {
-                return obj.state.default.update({ [prop]: value })
+                obj.state.default[prop] = value
+                return true
             }
 
-            throw new Error('You cannot write this field')
+            throw new Error('This field does not exist')
         },
     })
 }

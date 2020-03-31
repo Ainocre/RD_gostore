@@ -5,22 +5,23 @@ module.exports.Store = Store
 module.exports.type = type
 
 const store = Store().addState({
-    firstName: 'Gui',
-    lastName: 'Bou',
-    age: 20,
-}, {
-    methods: {
-        addAge() {
-            this.age++
+    active: true,
+    user: {
+        firstName: 'Gui',
+        lastName: 'Bou',
+        address: {
+            city: 'Lyon'
         },
     },
 })
 
+store.user.address = { city: 'Paris' }
+console.log(store.user.address.schema)
 
+// tester computed et methods
 
 
 // types
-// watchers
 // obj et arrays
 // observers chainés
 

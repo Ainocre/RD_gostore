@@ -2,24 +2,46 @@
 
 const Vue = require('vue')
 const {
-    forEach,
-    set,
-    get,
     cloneDeep,
+    isArray,
+    isObject,
 } = require('lodash')
-const { createValidationSchema } = require('./types')
+const { initState } = require('./types')
 
-const observer = (document, route, obj) => {
+const observable = (obj) => {
     if (typeof obj !== 'object') return obj
 
     return new Proxy(obj, {
         get(obj, prop) {
             if (prop in obj) return obj[prop]
-            return observer(document, [...route, prop], obj[prop])
+            return observable(obj[prop])
         },
         set(obj, prop, value) {
             if (prop in obj) {
-                document.update({ [[...route, prop].join('.')]: value })
+                if (isArray(obj[prop])) {
+                    
+                } else if (isObject(obj[prop])) {
+                    const newValue = obj[prop].validate(value)
+                    const schema = obj[prop].schema
+                    const validate = obj[prop].validate
+                    Object.defineProperty(newValue, 'schema', {
+                        get() {
+                            return schema
+                        },
+                        enumerable: false,
+                    })
+                    Object.defineProperty(newValue, 'validate', {
+                        get() {
+                            return validate
+                        },
+                        enumerable: false,
+                    })
+                    obj[prop] = newValue
+                } else {
+                    const newValue = obj.schema[prop].validate(value)
+                    obj[prop] = newValue
+                }
+                return true
             } else
                 throw new Error('This field does not exist')
         },
@@ -37,11 +59,9 @@ class Document {
         // Init helpers
         this.computed = options.computed || {}
         this.methods = options.methods || {}
-        this.watchers = options.watch || {}
 
         // Init validator and default state
-        this.validationSchema = createValidationSchema(state)
-        this.state = Vue.observable(this.validationSchema.defaultState)
+        this.state = Vue.observable(initState(state))
 
         const proxy = new Proxy(this, {
             get(obj, prop) {
@@ -59,18 +79,21 @@ class Document {
     
                 // Shortcut state fields to root document
                 if (prop in obj.state) {
-                    return observer(proxy, [prop], obj.state[prop])
+                    return observable(obj.state[prop])
                 }
             },
             set(obj, prop, value) {
+                if (prop === 'state') throw new Error('Cannot write state directly')
+
                 // Write state fields
                 if (prop in obj.state){
-                    obj.update({ [prop]: value })
+                    const newValue = obj.state.schema[prop].validate(value)
+                    obj.state[prop] = newValue
                     return true
                 }
     
                 // Prohibits to write anything else
-                throw new Error('Cannot write this field')
+                throw new Error('This field does not exist')
             },
         })
         this.proxy = proxy
@@ -78,30 +101,17 @@ class Document {
         return proxy
     }
 
-    update(state) {
-        console.log('update', state)
-        const newState = state
+    // save() {
 
-        // validation
-        // forEach(state, (field, key) => {
-        //     const validator = get(this.validationSchema, key)
-        //     if (validator) {
-        //         newState[key] = validator.validate(field)
-        //     }
-        // })
+    // }
 
-        forEach(newState, (field, key) => {
-            // Trigger watchers
-            if (get(this.watchers, key)) {
-                get(this.watchers, key)(cloneDeep(field), this[key])
-            }
+    // initStaging() {
 
-            // Update state
-            set(this.raw.state, key, field)
-        })
+    // }
 
-        return this.proxy
-    }
+    // saveStaging() {
+
+    // }
 
     toJS() {
         return cloneDeep(this.raw.state)
