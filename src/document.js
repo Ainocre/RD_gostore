@@ -1,6 +1,6 @@
 
 
-const Vue = require('vue')
+const { observable } = require('vue')
 const {
     cloneDeep,
 } = require('lodash')
@@ -19,7 +19,7 @@ class Document {
         this.methods = options.methods || {}
 
         // Init validator and default state
-        this.state = Vue.observable(initState(state))
+        this.state = observable(initState(state))
 
         const proxy = new Proxy(this, {
             get(obj, prop) {
