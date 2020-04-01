@@ -1,18 +1,18 @@
-# Vstore
+# Gostore
 
 ## Description
 
-Vstore is a global store for vuejs and quasarjs. Inspired by Mobx State Tree.
+Gostore is a global store for vuejs and quasarjs. Inspired by Mobx State Tree.
 Data are typed, reactives and validated before to be muted to prevent data inconsistency.
 ## installation
-`npm i -S vstore` ou `yarn add vstore`
+`npm i -S gostore` ou `yarn add gostore`
 
-Vstore is under beta version. Do not use for production yet
+Gostore is under beta version. Do not use for production yet
 
 ## Usage
 
 ```
-import { Store, type } from 'vstore'
+import { Store, type } from 'gostore'
 import Vue from 'vue'
 
 const store = Store().addState({
@@ -112,7 +112,7 @@ store.user.address = { city: 'SF' }
 ## Typed state
 You can create a detailed schema to validate all new values. If no default values are set, the value will be null by default.
 ```
-import { Store, type } from 'vstore'
+import { Store, type } from 'gostore'
 
 const store = Store().addState({
 	user: {
