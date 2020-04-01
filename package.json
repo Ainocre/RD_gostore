@@ -1,6 +1,6 @@
 {
   "name": "gostore",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Firebase magic store for Vuejs inspired by mobx-state-tree",
   "main": "index.js",
   "scripts": {
