@@ -36,9 +36,6 @@
     "prod": "nodemon lib/index.js"
   },
   "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ],
     "plugins": [
       "@babel/plugin-proposal-class-properties"
     ]
