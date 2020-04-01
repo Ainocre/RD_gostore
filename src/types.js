@@ -334,7 +334,7 @@ const proxify = (schema, obj) => {
             if (keys(obj).includes(prop)) {
                 // validation
                 const newObj = recursiveValidation(schema[isArray(obj) ? 0 : prop], value)
-                obj[prop] = proxifyRecursive(schema[isArray(obj) ? 0 : pro], newObj)
+                obj[prop] = proxifyRecursive(schema[isArray(obj) ? 0 : prop], newObj)
                 return true
 
             } else if (prop in obj) {

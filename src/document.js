@@ -3,7 +3,6 @@
 const Vue = require('vue')
 const {
     cloneDeep,
-    isObject,
 } = require('lodash')
 const { initState } = require('./types')
 
