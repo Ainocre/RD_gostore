@@ -5,18 +5,15 @@ module.exports.Store = Store
 module.exports.type = type
 
 const store = Store().addState({
-    active: true,
     user: {
-        firstName: 'Gui',
-        lastName: 'Bou',
-        address: {
-            city: 'Lyon'
-        },
+        tasks: [{ name: type('text') }],
     },
 })
 
-store.user.address = { city: 'Paris' }
-console.log(store.user.address.schema)
+store.user.tasks.push({ name: 'todo' })
+console.log(0, store.user.tasks[0].schema)
+
+
 
 // tester computed et methods
 
@@ -28,7 +25,7 @@ console.log(store.user.address.schema)
 
 
 // les arrays
-
+// refacto
 // Vue observables
 // collections
 

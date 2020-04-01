@@ -6,37 +6,32 @@ const {
     isArray,
     isObject,
 } = require('lodash')
-const { initState } = require('./types')
+const { initState, setHelpMethods } = require('./types')
 
 const observable = (obj) => {
     if (typeof obj !== 'object') return obj
 
     return new Proxy(obj, {
         get(obj, prop) {
-            if (prop in obj) return obj[prop]
-            return observable(obj[prop])
+            console.log(34, prop)
+            switch(prop) {
+                case 'push':
+                case 'pop':
+                case 'shift':
+                case 'unshit':
+                case 'splice':
+                    return () => true
+                default:
+                    return observable(obj[prop])
+            }
         },
         set(obj, prop, value) {
             if (prop in obj) {
-                if (isArray(obj[prop])) {
-                    
-                } else if (isObject(obj[prop])) {
-                    const newValue = obj[prop].validate(value)
-                    const schema = obj[prop].schema
-                    const validate = obj[prop].validate
-                    Object.defineProperty(newValue, 'schema', {
-                        get() {
-                            return schema
-                        },
-                        enumerable: false,
-                    })
-                    Object.defineProperty(newValue, 'validate', {
-                        get() {
-                            return validate
-                        },
-                        enumerable: false,
-                    })
-                    obj[prop] = newValue
+                if (isObject(obj[prop])) {
+                    const newObj = obj[prop].validate(value)
+                    setHelpMethods(obj[prop].schema, newObj)
+                    // set to subelements too
+                    obj[prop] = newObj
                 } else {
                     const newValue = obj.schema[prop].validate(value)
                     obj[prop] = newValue
@@ -87,8 +82,14 @@ class Document {
 
                 // Write state fields
                 if (prop in obj.state){
-                    const newValue = obj.state.schema[prop].validate(value)
-                    obj.state[prop] = newValue
+                    if (isObject(obj.state[prop])) {
+                        const newObj = obj.state[prop].validate(value)
+                        setHelpMethods(obj.state[prop].schema, newObj)
+                        obj[prop] = newObj
+                    } else {
+                        const newValue = obj.state.schema[prop].validate(value)
+                        obj.state[prop] = newValue
+                    }
                     return true
                 }
     

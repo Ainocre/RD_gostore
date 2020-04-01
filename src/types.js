@@ -252,6 +252,9 @@ const type = (...params) => new Type(...params)
 const parseType = (ele) => {
     if (ele.constructor.name === 'Type') return ele
 
+    if (isArray(ele) && ele.length !== 1) throw new Error('Array in schema must have exactly one child') 
+    if (isArray(ele)) return [parseType(ele[0])]
+
     if (isObject(ele)) {
         const schema = {}
         forEach(ele, (field, key) => {
@@ -259,8 +262,6 @@ const parseType = (ele) => {
         })
         return schema
     }
-    if (isArray(ele) && ele.length !== 1) throw new Error('Array in schema must have exactly one child') 
-    if (isArray(ele)) return [parseType(ele)]
 
     if (ele === null) return type('any')
     if (isString(ele)) return type('text').default(ele)
@@ -272,17 +273,34 @@ const parseType = (ele) => {
 
 const recursiveValidation = (schema, obj) => {
     if (schema.constructor.name === 'Type') return schema.validate(obj)
+    if (isArray(schema)) return obj.map((ele) => recursiveValidation(schema[0], ele))
 
     const newState = {}
 
+    if (isObject(schema) && !isObject(obj)) throw new Error('This field must be an object')
+
     forEach(schema, (field, key) => {
-        if (isObject(field))
-            newState[key] = recursiveValidation(field, get(obj, key, null))
-        else if (isArray(field))
-            newState[key] = field.map((ele, index) => recursiveValidation(ele, obj[key][index]))
+        newState[key] = recursiveValidation(field, get(obj, key, null))
     })
 
     return newState
+}
+
+const setHelpMethods = (schema, obj) => {
+    Object.defineProperty(obj, 'schema', {
+        get() {
+            return schema
+        },
+        enumerable: false,
+    })
+    Object.defineProperty(obj, 'validate', {
+        get() {
+            return (ele) => recursiveValidation(schema, ele)
+        },
+        enumerable: false,
+    })
+
+    return obj
 }
 
 const getRecursiveDefaultState = (schema) => {
@@ -290,21 +308,12 @@ const getRecursiveDefaultState = (schema) => {
     const defaultState = {}
 
     forEach(schema, (field, key) => {
-        if (isArray(field)) defaultState[key] = []
-        else defaultState[key] = getRecursiveDefaultState(field)
-    })
-
-    Object.defineProperty(defaultState, 'schema', {
-        get() {
-            return schema
-        },
-        enumerable: false,
-    })
-    Object.defineProperty(defaultState, 'validate', {
-        get() {
-            return (ele) => recursiveValidation(schema, ele)
-        },
-        enumerable: false,
+        if (isArray(field))
+            defaultState[key] = setHelpMethods(field, [])
+        else if (field.constructor.name !== 'Type')
+            defaultState[key] = setHelpMethods(field, getRecursiveDefaultState(field))
+        else
+            defaultState[key] = field.defaultValue
     })
 
     return defaultState
@@ -322,3 +331,5 @@ const initState = (state) => {
 
 module.exports.type = type
 module.exports.initState = initState
+module.exports.setHelpMethods = setHelpMethods
+
