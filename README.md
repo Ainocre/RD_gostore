@@ -1,20 +1,20 @@
-# Vstore
+# Gostore
 
 ## Description
 
-Vstore is a global store inspired by MobX state tree for Vue.js and the Quasar Framework.
+Gostore is a global store inspired by MobX state tree for Vue.js and the Quasar Framework.
 Data is typed, reactives, and validated before being muted to prevent inconsistency.
 
-⚠️ Vstore is in beta, don't use it for production yet! ⚠️
+⚠️ Gostore is in beta, don't use it for production yet! ⚠️
 
 ## installation
 
-`npm i -S vstore` or `yarn add vstore`
+`npm i -S Gostore` or `yarn add Gostore`
 
 ## Usage
 
 ```javascript
-import { Store, type } from 'vstore'
+import { Store, type } from 'Gostore'
 import Vue from 'vue'
 
 const store = Store().addState({
@@ -127,7 +127,8 @@ store.user.address = { city: 'SF' }
 You can create detailed schemas to validate all new values. If no default value is set, the value will be null by default.
 
 ```javascript
-import { Store, type } from 'vstore'
+
+import { Store, type } from 'gostore'
 
 const store = Store().addState({
 	user: {
