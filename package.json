@@ -2,10 +2,7 @@
   "name": "gostore",
   "version": "0.1.2",
   "description": "Firebase magic store for Vuejs inspired by mobx-state-tree",
-  "main": "index.js",
-  "scripts": {
-    "test": ""
-  },
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ainocre/jstore.git"
@@ -26,5 +23,20 @@
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "vue": "^2.6.11"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.9.0"
+  },
+  "scripts": {
+    "prepublish": "babel src --out-dir lib"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "plugins": ["@babel/plugin-proposal-class-properties"]
   }
 }

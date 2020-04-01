@@ -1,5 +1,5 @@
-const Store = require('./src/store.js')
-const { type } = require('./src/types.js')
+const Store = require('./store.js')
+const { type } = require('./types.js')
 
 module.exports.Store = Store
 module.exports.type = type
