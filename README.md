@@ -3,7 +3,7 @@
 ## Description
 
 Gostore is a global store inspired by MobX state tree for Vue.js and the Quasar Framework.
-Data is typed, reactives, and validated before being muted to prevent inconsistency.
+Data is typed, reactive, and validated before being muted to prevent inconsistency.
 
 ⚠️ Gostore is in beta, don't use it for production yet! ⚠️
 
