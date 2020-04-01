@@ -4,7 +4,7 @@ const Vue = require('vue')
 const {
     cloneDeep,
 } = require('lodash')
-const { initState } = require('./types')
+const { initState } = require('./types.js')
 
 class Document {
     type = 'session'

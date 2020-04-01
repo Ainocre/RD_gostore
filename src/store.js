@@ -1,4 +1,4 @@
-const Document = require('./document')
+const Document = require('./document.js')
 
 const {
     isObject,
