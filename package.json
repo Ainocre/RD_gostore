@@ -1,6 +1,6 @@
 {
   "name": "gostore",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Firebase magic store for Vuejs inspired by mobx-state-tree",
   "main": "lib/index.js",
   "repository": {
@@ -37,6 +37,8 @@
     "presets": [
       "@babel/preset-env"
     ],
-    "plugins": ["@babel/plugin-proposal-class-properties"]
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
+    ]
   }
 }
