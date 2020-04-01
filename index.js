@@ -1,5 +1,6 @@
 const Store = require('./src/store.js')
 const { type } = require('./src/types')
+const { get } = require('lodash')
 
 module.exports.Store = Store
 module.exports.type = type
@@ -8,24 +9,14 @@ const store = Store().addState({
     user: {
         tasks: [{ name: type('text') }],
     },
+}, {
+    methods: {
+        addItem(item) {
+            return this.user.tasks.push(item)
+        }
+    }
 })
 
-store.user.tasks.push({ name: 'todo' })
-console.log(0, store.user.tasks[0].schema)
-
-
-
-// tester computed et methods
-
-
-// types
-// obj et arrays
-// observers chainés
-
-
-
-// les arrays
-// refacto
 // Vue observables
 // collections
 

@@ -3,45 +3,9 @@
 const Vue = require('vue')
 const {
     cloneDeep,
-    isArray,
     isObject,
 } = require('lodash')
-const { initState, setHelpMethods } = require('./types')
-
-const observable = (obj) => {
-    if (typeof obj !== 'object') return obj
-
-    return new Proxy(obj, {
-        get(obj, prop) {
-            console.log(34, prop)
-            switch(prop) {
-                case 'push':
-                case 'pop':
-                case 'shift':
-                case 'unshit':
-                case 'splice':
-                    return () => true
-                default:
-                    return observable(obj[prop])
-            }
-        },
-        set(obj, prop, value) {
-            if (prop in obj) {
-                if (isObject(obj[prop])) {
-                    const newObj = obj[prop].validate(value)
-                    setHelpMethods(obj[prop].schema, newObj)
-                    // set to subelements too
-                    obj[prop] = newObj
-                } else {
-                    const newValue = obj.schema[prop].validate(value)
-                    obj[prop] = newValue
-                }
-                return true
-            } else
-                throw new Error('This field does not exist')
-        },
-    })
-}
+const { initState } = require('./types')
 
 class Document {
     type = 'session'
@@ -73,23 +37,16 @@ class Document {
                 if (prop in obj.methods) return obj.methods[prop].bind(proxy)
     
                 // Shortcut state fields to root document
-                if (prop in obj.state) {
-                    return observable(obj.state[prop])
+                if (obj.state[prop]) {
+                    return obj.state[prop]
                 }
             },
             set(obj, prop, value) {
                 if (prop === 'state') throw new Error('Cannot write state directly')
 
                 // Write state fields
-                if (prop in obj.state){
-                    if (isObject(obj.state[prop])) {
-                        const newObj = obj.state[prop].validate(value)
-                        setHelpMethods(obj.state[prop].schema, newObj)
-                        obj[prop] = newObj
-                    } else {
-                        const newValue = obj.state.schema[prop].validate(value)
-                        obj.state[prop] = newValue
-                    }
+                if (obj.state[prop]){
+                    obj.state[prop] = value
                     return true
                 }
     

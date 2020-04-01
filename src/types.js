@@ -273,7 +273,10 @@ const parseType = (ele) => {
 
 const recursiveValidation = (schema, obj) => {
     if (schema.constructor.name === 'Type') return schema.validate(obj)
-    if (isArray(schema)) return obj.map((ele) => recursiveValidation(schema[0], ele))
+    if (isArray(schema)) {
+        if (!isArray(obj)) throw new Error('This field must be an array')
+        return obj.map((ele) => recursiveValidation(schema[0], ele))
+    }
 
     const newState = {}
 
@@ -286,21 +289,62 @@ const recursiveValidation = (schema, obj) => {
     return newState
 }
 
-const setHelpMethods = (schema, obj) => {
-    Object.defineProperty(obj, 'schema', {
-        get() {
-            return schema
-        },
-        enumerable: false,
-    })
-    Object.defineProperty(obj, 'validate', {
-        get() {
-            return (ele) => recursiveValidation(schema, ele)
-        },
-        enumerable: false,
+const proxifyRecursive = (schema, obj) => {
+    if (schema.constructor.name === 'Type') return obj
+    if (isArray(obj)) return proxify(schema, obj.map((ele) => proxifyRecursive(schema[0], ele)))
+
+    const state = {}
+
+    forEach(schema, (field, key) => {
+        state[key] = proxifyRecursive(field, obj[key])
     })
 
-    return obj
+    return proxify(schema, state)
+}
+
+const proxify = (schema, obj) => {
+    if (typeof obj !== 'object') return obj
+
+    return new Proxy(obj, {
+        get(obj, prop) {
+            if (prop === 'isProxy') return true
+            if (isArray(obj)) {
+                switch(prop) {
+                    case 'push':
+                        return (...items) => obj.push(...items.map((item) => {
+                            const newObj = recursiveValidation(schema[0], item)
+                            return proxifyRecursive(schema[0], newObj)
+                        }))
+                    case 'unshift':
+                        return (...items) => obj.unshift(...items.map((item) => {
+                            const newObj = recursiveValidation(schema[0], item)
+                            return proxifyRecursive(schema[0], newObj)
+                        }))
+                    case 'splice':
+                        return (pos, nb, ...items) => obj.splice(pos, nb, ...items.map((item) => {
+                            const newObj = recursiveValidation(schema[0], item)
+                            return proxifyRecursive(schema[0], newObj)
+                        }))
+                }
+            }
+
+            return obj[prop]
+        },
+        set(obj, prop, value) {
+            if (keys(obj).includes(prop)) {
+                // validation
+                const newObj = recursiveValidation(schema[isArray(obj) ? 0 : prop], value)
+                obj[prop] = proxifyRecursive(schema[isArray(obj) ? 0 : pro], newObj)
+                return true
+
+            } else if (prop in obj) {
+                obj[prop] = value
+                return true
+            } else {
+                throw new Error('This field does not exist')
+            }
+        },
+    })
 }
 
 const getRecursiveDefaultState = (schema) => {
@@ -309,9 +353,9 @@ const getRecursiveDefaultState = (schema) => {
 
     forEach(schema, (field, key) => {
         if (isArray(field))
-            defaultState[key] = setHelpMethods(field, [])
+            defaultState[key] = []
         else if (field.constructor.name !== 'Type')
-            defaultState[key] = setHelpMethods(field, getRecursiveDefaultState(field))
+            defaultState[key] = getRecursiveDefaultState(field)
         else
             defaultState[key] = field.defaultValue
     })
@@ -326,10 +370,9 @@ const initState = (state) => {
         schema[key] = parseType(field)
     })
 
-    return getRecursiveDefaultState(schema)
+    return proxifyRecursive(schema, getRecursiveDefaultState(schema))
 }
 
 module.exports.type = type
 module.exports.initState = initState
-module.exports.setHelpMethods = setHelpMethods
 
