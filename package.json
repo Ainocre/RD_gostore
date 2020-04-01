@@ -15,6 +15,11 @@
   "bugs": {
     "url": "https://github.com/Ainocre/jstore/issues"
   },
+  "engines": {
+    "node": ">= 10.18.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  },
   "homepage": "https://github.com/Ainocre/jstore#readme",
   "dependencies": {
     "email-regex": "^4.0.0",
