@@ -1,12 +1,18 @@
-import Store  from './store.js'
+import Store, { install }  from './store.js'
 import { type } from './types.js'
 
-export { Store, type }
+export default {
+    install,
+    Store,
+    type,
+}
 
-// module.exports.Store = Store
-// module.exports.type = type
+export {
+    install,
+    Store,
+    type,
+}
 
-// Vue observables
 // collections
 // Jointures
 

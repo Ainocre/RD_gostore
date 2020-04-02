@@ -1,5 +1,7 @@
 import Document from './document.js'
 
+let Vue
+
 const {
     isObject,
     isUndefined,
@@ -16,6 +18,7 @@ class Store {
         // -- firebase: firebase => save into firebase
         // -- cryptCode: String => key to decrypt encrypted data
         this.options = options
+        this.Vue = Vue
     }
 
     addState(...params) {
@@ -103,4 +106,8 @@ export default (...params) => {
             throw new Error('This field does not exist')
         },
     })
+}
+
+export const install = (_Vue, options) => {
+    Vue = _Vue
 }

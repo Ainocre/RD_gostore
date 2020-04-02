@@ -18,7 +18,7 @@ class Document {
         this.methods = options.methods || {}
 
         // Init validator and default state
-        this.state = store.options.Vue.observable(initState(state))
+        this.state = store.Vue.observable(initState(state))
 
         const proxy = new Proxy(this, {
             get(obj, prop) {
