@@ -25,8 +25,6 @@ const store = Store().addState({
 })
 
 console.log(store.firstName) // -> Foo
-
-Vue.prototype.$store = store
 ```
 
 You can now use it in your views
