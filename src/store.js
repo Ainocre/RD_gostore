@@ -73,7 +73,7 @@ class Store {
 
 export default (...params) => {
     const store = new Store(...params)
-    return new Proxy(store, {
+    const proxy = new Proxy(store, {
         get(obj, prop) {
             // object methods
             const res = obj[prop]
@@ -106,6 +106,10 @@ export default (...params) => {
             throw new Error('This field does not exist')
         },
     })
+
+    Vue.prototype.$store = proxy
+
+    return proxy
 }
 
 export const install = (_Vue, options) => {
