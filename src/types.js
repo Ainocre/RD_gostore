@@ -347,28 +347,35 @@ const proxify = (schema, obj) => {
     })
 }
 
-const getRecursiveDefaultState = (schema) => {
-    if (schema.constructor.name === 'Type') return schema.defaultValue
-    const defaultState = {}
+const getRecursiveDefaultState = (schema, defaultState) => {
+    if (schema.constructor.name === 'Type') {
+        return schema.validate(defaultState) || schema.defaultValue
+    }
+    const state = {}
 
     forEach(schema, (field, key) => {
-        if (isArray(field))
-            defaultState[key] = []
+        if (isArray(field)) {
+            if (defaultState && isArray(defaultState[key])) {
+                state[key] = defaultState[key]
+            } else {
+                state[key] = []
+            }
+        }
         else if (field.constructor.name !== 'Type')
-            defaultState[key] = getRecursiveDefaultState(field)
+            state[key] = getRecursiveDefaultState(field, defaultState && defaultState[key])
         else
-            defaultState[key] = field.defaultValue
+            state[key] = field.validate(defaultState[key]) || field.defaultValue
     })
 
-    return defaultState
+    return state
 }
 
-export const initState = (state) => {
+export const initState = (state, defaultState) => {
     const schema = {}
 
     forEach(state, (field, key) => {
         schema[key] = parseType(field)
     })
 
-    return proxifyRecursive(schema, getRecursiveDefaultState(schema))
+    return proxifyRecursive(schema, getRecursiveDefaultState(schema, defaultState))
 }

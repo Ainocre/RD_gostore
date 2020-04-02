@@ -4,7 +4,9 @@ let Vue
 
 const {
     isObject,
+    isArray,
     isUndefined,
+    cloneDeep,
 } = require('lodash')
 
 class Store {
@@ -34,8 +36,14 @@ class Store {
         return this
     }
 
-    addCollection(collectionName, collectionModel) {
+    addCollection(name, schema, options) {
+        this.collections[name] = Object.assign(Vue.observable({ items: [] }), {
+            options,
+            name,
+            schema,
+        })
 
+        return this
     }
 
     setCryptCode(newCryptCode) {
@@ -88,7 +96,36 @@ export default (...params) => {
             if (prop in obj.state) return obj.state[prop]
 
             // Shortcut collections to store
-            if (prop in obj.collections) return obj.collections[prop]
+            if (prop in obj.collections) return new Proxy(obj.collections[prop].items, {
+                get(arr, arrProp) {
+                    switch(arrProp) {
+                        case 'add':
+                            return (...items) =>
+                                arr.push(...items.map((item) => {
+                                    if (!isObject(item) || isArray(item)) {
+                                        throw new Error('A collection item must be an object')
+                                    }
+                                    return Document(store, obj.collections[prop].schema, {
+                                        ...obj.collections[prop].options,
+                                        defaultState: item,
+                                    })
+                                }))
+                        case 'reset':
+                            return () => obj.collections[prop].items = []
+                        case 'toJS':
+                            return () => cloneDeep(arr.map(item => item.toJS()))
+                    }
+
+                    if (arrProp in arr) return arr[arrProp]
+                },
+                set(obj, prop, value) {
+                    if (prop in obj) {
+                        obj[prop] = value
+                        return true
+                    }
+                    return true
+                },
+            })
         },
         set(obj, prop, value) {
             // normal behavior of obj methods and vars
@@ -103,7 +140,7 @@ export default (...params) => {
                 return true
             }
 
-            throw new Error('This field does not exist')
+            throw new Error('You cannot write this field')
         },
     })
 

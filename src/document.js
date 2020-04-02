@@ -2,14 +2,20 @@
 
 import {
     cloneDeep,
+    uniqueId,
 } from 'lodash'
 import { initState } from './types.js'
 
 class Document {
-    type = 'session'
-    collectionName = null
+    meta = {
+        _removed: false,
+        _hardRemoved: false,
+        _createdAt: Date.now(),
+        _updatedAt: Date.now(),
+        _id: uniqueId('doc_'),
+    }
 
-    constructor(store, stateName, state, options) {
+    constructor(store, schema, options) {
         this.store = store
         this.raw = this
 
@@ -18,12 +24,14 @@ class Document {
         this.methods = options.methods || {}
 
         // Init validator and default state
-        this.state = store.Vue.observable(initState(state))
+        this.state = store.Vue.observable(initState(schema, options.defaultState))
 
         const proxy = new Proxy(this, {
             get(obj, prop) {
                 // Prohibits direct use state field
-                if (prop === 'state') throw new Error('Cannot access state directly')
+                // if (prop === 'state') throw new Error('Cannot access state directly')
+
+                // if (prop === 'meta') throw new Error('Cannot access to meta data directly')
 
                 // Normal obj behavior
                 if (prop in obj) return obj[prop]
@@ -35,7 +43,7 @@ class Document {
                 if (prop in obj.methods) return obj.methods[prop].bind(proxy)
     
                 // Shortcut state fields to root document
-                if (obj.state[prop]) {
+                if (prop in obj.state) {
                     return obj.state[prop]
                 }
             },
@@ -43,7 +51,7 @@ class Document {
                 if (prop === 'state') throw new Error('Cannot write state directly')
 
                 // Write state fields
-                if (obj.state[prop]){
+                if (prop in obj.state){
                     obj.state[prop] = value
                     return true
                 }
@@ -69,8 +77,23 @@ class Document {
 
     // }
 
+    hardRemove() {
+        this.meta._hardRemoved = true
+    }
+
+    softRemove() {
+        this.meta._removed = true
+    }
+
+    recover() {
+        this.meta._removed = false
+    }
+
     toJS() {
-        return cloneDeep(this.raw.state)
+        return cloneDeep({
+            ...this.raw.meta,
+            ...this.raw.state
+        })
     }
 }
 
