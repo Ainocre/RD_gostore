@@ -9,13 +9,15 @@ Data is typed, reactive, and validated before being muted to prevent inconsisten
 
 ## installation
 
-`npm i -S Gostore` or `yarn add Gostore`
+`npm i -S gostore` or `yarn add gostore`
 
 ## Usage
 
-```javascript
-import { Store, type } from 'Gostore'
+```js
+import gostore, { Store, type } from 'gostore'
 import Vue from 'vue'
+
+Vue.use(gostore)
 
 const store = Store().addState({
 	firstName: 'Foo',
@@ -29,7 +31,7 @@ Vue.prototype.$store = store
 
 You can now use it in your views
 
-```
+```html
 <div>
 	{{$store.firstName}}
 </div>
@@ -46,6 +48,16 @@ store.firstName = 'bazz'
 You can create computed values in an option object like this:
 
 ```javascript
+=======
+Anytime if you change the store all views will be updated
+```js
+store.firstName = 'bazz'
+```
+
+## Computed
+You can create computed in an options object like so
+
+```js
 const store = Store().addState({
 	firstName: 'Foo',
 	lastName: 'Bar',
@@ -61,10 +73,9 @@ console.log(store.fullName) // -> 'Foo Bar'
 ```
 
 ## Methods
-
 You can add methods in the option object
 
-```javascript
+```js
 const store = Store().addState({
 	age: 20,
 }, {
@@ -80,10 +91,9 @@ console.log(store.age) // -> 21
 ```
 
 ## Nested Objects and Arrays
-
 You can create deep states. The structure of the data cannot be changed later.
 
-```javascript
+```js
 const store = Store().addState({
 	user: {
 		name: 'Foo',
@@ -123,12 +133,12 @@ store.user.address = { city: 'SF' }
 ```
 
 ## Typed state
-
 You can create detailed schemas to validate all new values. If no default value is set, the value will be null by default.
 
-```javascript
+```js
+import gostore, { Store, type } from 'gostore'
 
-import { Store, type } from 'gostore'
+Vue.use(gostore)
 
 const store = Store().addState({
 	user: {
@@ -163,20 +173,18 @@ Explanations and types to come:
 * many more!
 
 ## Type shortcuts
-
 In the first examples, we declared the types as pure data. In fact, they are shortcuts for a type and a default value. For example:
 
-```javascript
+```js
 Store().addState({
 	task: 'No name',
 	checked: false,
 	order: 3,
 })
 ```
+Is exactly the same as :
 
-is exactly the same as:
-
-```javascript
+```js
 Store().addState({
 	task: type('text').default('No name'),
 	checked: type('checkbox').default(false),
@@ -185,10 +193,9 @@ Store().addState({
 ```
 
 ## Multiple states
-
 Sometimes you want more than one store. You can create stores in a namespace by giving them a name. If they don't have a name, then they are default stores, and their properties are linked to the root store.
 
-```
+```js
 Store()
 	.addState({
 		name: 'Invited',

@@ -1,6 +1,6 @@
-const moment = require('moment')
-const emailRegex = require('email-regex')
-const {
+import moment from 'moment'
+import emailRegex from 'email-regex'
+import {
     isObject,
     isArray,
     isString,
@@ -14,7 +14,7 @@ const {
     isNil,
     isUndefined,
     constant,
-} = require('lodash')
+} from 'lodash'
 
 const typeDict = {
     any: constant(true),
@@ -247,7 +247,7 @@ class Type {
     }
 }
 
-const type = (...params) => new Type(...params)
+export const type = (...params) => new Type(...params)
 
 const parseType = (ele) => {
     if (ele.constructor.name === 'Type') return ele
@@ -363,7 +363,7 @@ const getRecursiveDefaultState = (schema) => {
     return defaultState
 }
 
-const initState = (state) => {
+export const initState = (state) => {
     const schema = {}
 
     forEach(state, (field, key) => {
@@ -372,7 +372,3 @@ const initState = (state) => {
 
     return proxifyRecursive(schema, getRecursiveDefaultState(schema))
 }
-
-module.exports.type = type
-module.exports.initState = initState
-

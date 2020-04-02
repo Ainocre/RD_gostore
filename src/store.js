@@ -1,4 +1,6 @@
-const Document = require('./document')
+import Document from './document.js'
+
+let Vue
 
 const {
     isObject,
@@ -16,6 +18,7 @@ class Store {
         // -- firebase: firebase => save into firebase
         // -- cryptCode: String => key to decrypt encrypted data
         this.options = options
+        this.Vue = Vue
     }
 
     addState(...params) {
@@ -68,9 +71,9 @@ class Store {
     // }
 }
 
-module.exports = (...params) => {
+export default (...params) => {
     const store = new Store(...params)
-    return new Proxy(store, {
+    const proxy = new Proxy(store, {
         get(obj, prop) {
             // object methods
             const res = obj[prop]
@@ -103,4 +106,12 @@ module.exports = (...params) => {
             throw new Error('This field does not exist')
         },
     })
+
+    Vue.prototype.$store = proxy
+
+    return proxy
+}
+
+export const install = (_Vue, options) => {
+    Vue = _Vue
 }
