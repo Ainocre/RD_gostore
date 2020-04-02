@@ -2,12 +2,14 @@
 
 ## Description
 
-Gostore is a global store for vuejs and quasarjs. Inspired by Mobx State Tree.
-Data are typed, reactives and validated before to be muted to prevent data inconsistency.
-## installation
-`npm i -S gostore` ou `yarn add gostore`
+Gostore is a global store inspired by MobX state tree for Vue.js and the Quasar Framework.
+Data is typed, reactive, and validated before being muted to prevent inconsistency.
 
-Gostore is under beta version. Do not use for production yet
+⚠️ Gostore is in beta, don't use it for production yet! ⚠️
+
+## installation
+
+`npm i -S gostore` or `yarn add gostore`
 
 ## Usage
 
@@ -27,19 +29,24 @@ console.log(store.firstName) // -> Foo
 Vue.prototype.$store = store
 ```
 
-You can now use it in yours views
+You can now use it in your views
+
 ```html
 <div>
 	{{$store.firstName}}
 </div>
 ```
-Anytime if you change the store all views will be updated
+
+At any time if you change the store all views will be updated.
+
 ```js
 store.firstName = 'bazz'
 ```
 
-## Computed
-You can create computed in an options object like so
+## Computed values
+
+You can create computed values in an option object like this:
+
 ```js
 const store = Store().addState({
 	firstName: 'Foo',
@@ -54,8 +61,10 @@ const store = Store().addState({
 
 console.log(store.fullName) // -> 'Foo Bar'
 ```
+
 ## Methods
-You can add methods in the options object
+You can add methods in the option object
+
 ```js
 const store = Store().addState({
 	age: 20,
@@ -72,7 +81,8 @@ console.log(store.age) // -> 21
 ```
 
 ## Nested Objects and Arrays
-You can create a deep state. The data structure can't be changed in the future
+You can create deep states. The structure of the data cannot be changed later.
+
 ```js
 const store = Store().addState({
 	user: {
@@ -88,13 +98,13 @@ const store = Store().addState({
 // These will throw an error
 
 store.whatever = true
-// ALERT ! This field doesnt exists
+// ALERT! This field doesn't exist
 
 store.user = 'John'
-// ALERT ! This field must be an object
+// ALERT! This field must be an object
 
 store.user.tasks.push(21)
-// ALERT ! This field must be a string
+// ALERT! This field must be a string
 
 // __________________________________________
 // These will work perfectly
@@ -111,8 +121,10 @@ console.log(store.user.tasks) // -> ['clean my computer']
 store.user.address.city = 'LA'
 store.user.address = { city: 'SF' }
 ```
+
 ## Typed state
-You can create a detailed schema to validate all new values. If no default values are set, the value will be null by default.
+You can create detailed schemas to validate all new values. If no default value is set, the value will be null by default.
+
 ```js
 import gostore, { Store, type } from 'gostore'
 
@@ -133,12 +145,26 @@ const store = Store().addState({
 	}
 })
 ```
-Current allowed types : text, textarea, number, checkbox, toggle
-Lot more explanations and types coming soon !
-Teasing : photo, file, select, radio, toggle, checkbox, etc.
+
+Current allowed types:
+* text
+* textarea
+* number
+* checkbox
+* toggle
+
+Explanations and types to come:
+* photo
+* file
+* select
+* radio
+* toggle
+* checkbox
+* many more!
 
 ## Type shortcuts
-In first examples we declared types as pure data. In fact they are shortcuts for a type and a default value. Example :
+In the first examples, we declared the types as pure data. In fact, they are shortcuts for a type and a default value. For example:
+
 ```js
 Store().addState({
 	task: 'No name',
@@ -147,6 +173,7 @@ Store().addState({
 })
 ```
 Is exactly the same as :
+
 ```js
 Store().addState({
 	task: type('text').default('No name'),
@@ -154,8 +181,10 @@ Store().addState({
 	order: type('number').default(3),
 })
 ```
+
 ## Multiple states
-Sometime you want more than one store. You can create namespaced stores giving them a name. If they haven't a name, so they are default store, and there properties are proxied to the root of the store.
+Sometimes you want more than one store. You can create stores in a namespace by giving them a name. If they don't have a name, then they are default stores, and their properties are linked to the root store.
+
 ```js
 Store()
 	.addState({
@@ -168,7 +197,7 @@ Store()
 console.log(store.name) // -> 'Invited'
 console.log(store.cart.productName) // -> 'computer
 
-// These are shortcuts to the real store state here :
+// These are shortcuts to the actual store state:
 console.log(store.state)
 // -> { default: { name: 'Invited' }, cart: { productName: 'computer' } }
 ```
