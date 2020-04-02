@@ -39,23 +39,13 @@ You can now use it in your views
 
 At any time if you change the store all views will be updated.
 
-```javascript
+```js
 store.firstName = 'bazz'
 ```
 
 ## Computed values
 
 You can create computed values in an option object like this:
-
-```javascript
-=======
-Anytime if you change the store all views will be updated
-```js
-store.firstName = 'bazz'
-```
-
-## Computed
-You can create computed in an options object like so
 
 ```js
 const store = Store().addState({
