@@ -1,8 +1,10 @@
-const Store = require('./store.js')
-const { type } = require('./types.js')
+import Store  from './store.js'
+import { type } from './types.js'
 
-module.exports.Store = Store
-module.exports.type = type
+export { Store, type }
+
+// module.exports.Store = Store
+// module.exports.type = type
 
 // Vue observables
 // collections

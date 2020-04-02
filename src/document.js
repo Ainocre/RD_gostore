@@ -1,10 +1,9 @@
 
 
-const Vue = require('vue')
-const {
+import {
     cloneDeep,
-} = require('lodash')
-const { initState } = require('./types.js')
+} from 'lodash'
+import { initState } from './types.js'
 
 class Document {
     type = 'session'
@@ -19,7 +18,7 @@ class Document {
         this.methods = options.methods || {}
 
         // Init validator and default state
-        this.state = Vue.observable(initState(state))
+        this.state = store.options.Vue.observable(initState(state))
 
         const proxy = new Proxy(this, {
             get(obj, prop) {
@@ -75,4 +74,4 @@ class Document {
     }
 }
 
-module.exports = (...params) => new Document(...params)
+export default (...params) => new Document(...params)

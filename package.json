@@ -3,6 +3,7 @@
   "version": "0.1.7",
   "description": "Firebase magic store for Vuejs inspired by mobx-state-tree",
   "main": "lib/index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ainocre/jstore.git"
@@ -21,8 +22,7 @@
   "dependencies": {
     "email-regex": "^4.0.0",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
-    "vue": "^2.6.11"
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -32,8 +32,7 @@
   },
   "scripts": {
     "prepublish": "babel src --out-dir lib",
-    "dev": "nodemon src/index.js",
-    "prod": "nodemon lib/index.js"
+    "local": "babel src -w --out-dir lib"
   },
   "babel": {
     "plugins": [

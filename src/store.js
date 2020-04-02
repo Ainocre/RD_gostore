@@ -1,4 +1,4 @@
-const Document = require('./document.js')
+import Document from './document.js'
 
 const {
     isObject,
@@ -68,7 +68,7 @@ class Store {
     // }
 }
 
-module.exports = (...params) => {
+export default (...params) => {
     const store = new Store(...params)
     return new Proxy(store, {
         get(obj, prop) {
